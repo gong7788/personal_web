@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ user.name }}'s Watchlist</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/temple_icon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% endblock %}
+</head>
+<body>
+    <h2>
+        <img alt="avatar" class="avatar" src="{{ url_for('static', filename='images/totoro.png')}}">  
+        {# 使用 url_for() 函数生成静态文件的 URL #}
+        {{ user.name }}'s Watchlist
+    </h2>
+
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('index')}}">Home</a></li>
+        </ul>
+    </nav>
+    {% block content %}
+    {% endblock %}
+    <footer>
+        <small>&copy; 2018 <a href="http://helloflask.com/book/3">HelloFlask</a></small>
+    </footer>
+</body>
+</html>
