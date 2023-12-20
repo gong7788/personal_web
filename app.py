@@ -1,14 +1,14 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, url_for, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
 import click
 import os
 from markupsafe import escape
-from flask import url_for
 
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////' + os.path.join(app.root_path, 'data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭对模型修改的监控
+app.config['SECRET_KEY'] = 'dev'  # 等同于 app.secret_key = 'dev'
 db = SQLAlchemy(app)
 
 class User(db.Model):
@@ -25,11 +25,44 @@ def inject_user():
     user = User.query.first()
     return dict(user=user)
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        year = request.form.get('year')
+                # 验证数据
+        if not name or not year or len(year) != 4 or len(name) > 60:
+            flash('Invalid input.')  # 显示错误提示
+            return redirect(url_for('index'))  # 重定向回主页
+        # 保存表单数据到数据库
+        movie = Movie(title=name, year=year)  # 创建记录
+        db.session.add(movie)  # 添加到数据库会话
+        db.session.commit()  # 提交数据库会话
+        flash('Item created.')  # 显示成功创建的提示
+        return redirect(url_for('index'))  # 重定向回主页
     # user = User.query.first()
     movies = Movie.query.all()
     return render_template('index.html', movies=movies)
+
+@app.route('/movie/edit/<int:movie_id>', methods=['GET', 'POST'])
+def edit(movie_id):
+    movie = Movie.query.get_or_404(movie_id)
+
+    if request.method == 'POST':
+        name = request.form['title']
+        year = request.form.get('year')
+
+        if not name or not year or len(year) != 4 or len(name) > 60:
+            flash('Invalid input.')  # 显示错误提示
+            return redirect(url_for('edit', movie_id=movie_id))  # 重定向回主页
+
+        movie.title = name  # 更新标题
+        movie.year = year
+        db.session.commit()
+        flash('Item updated.')
+        return redirect(url_for('index'))
+
+    return render_template('edit.html', movie=movie)
 
 @app.cli.command()
 @click.option('--drop', is_flag=True, help='Create after drop.')

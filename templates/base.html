@@ -21,6 +21,11 @@
             <li><a href="{{ url_for('index')}}">Home</a></li>
         </ul>
     </nav>
+
+    {% for message in get_flashed_messages() %}
+    <div class="alert">{{ message }}</div>
+    {% endfor %}
+    
     {% block content %}
     {% endblock %}
     <footer>
