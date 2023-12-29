@@ -30,7 +30,7 @@ def index():
     if request.method == 'POST':
         name = request.form.get('name')
         year = request.form.get('year')
-                # 验证数据
+        # 验证数据
         if not name or not year or len(year) != 4 or len(name) > 60:
             flash('Invalid input.')  # 显示错误提示
             return redirect(url_for('index'))  # 重定向回主页
@@ -63,6 +63,18 @@ def edit(movie_id):
         return redirect(url_for('index'))
 
     return render_template('edit.html', movie=movie)
+
+@app.route('/movie/delete/<int:movie_id>', methods=['POST'])
+def delete(movie_id):
+    movie = Movie.query.get_or_404(movie_id)
+    db.session.delete(movie)
+    db.session.commit()
+    flash('Item deleted.')
+    return redirect(url_for('index'))
+
+@app.route('/hello')
+def hello():
+    return 'Welcome to My Watchlist!'
 
 @app.cli.command()
 @click.option('--drop', is_flag=True, help='Create after drop.')
